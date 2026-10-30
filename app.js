@@ -1686,7 +1686,7 @@ function refreshKg() { const el = $('#kg-box'); if (el) el.innerHTML = kategoriH
    MODAL OCH TOAST
    ===================================================================== */
 function modal(html) { $('#sheet').innerHTML = html; $('#modal').hidden = false; document.body.classList.add('noscroll'); }
-function closeModal() { S.formFocused = false; $('#modal').hidden = true; $('#sheet').innerHTML = ''; S.form = null; S.imp = null; document.body.classList.remove('noscroll'); if (S.dirty) { S.dirty = false; render(); } }
+function closeModal() { if (S.reloadAfterModal) return S.reloadAfterModal(); S.formFocused = false; $('#modal').hidden = true; $('#sheet').innerHTML = ''; S.form = null; S.imp = null; document.body.classList.remove('noscroll'); if (S.dirty) { S.dirty = false; render(); } }
 let toastTimer;
 function toast(msg, kind) {
   const t = $('#toast'); t.textContent = msg; t.className = 'toast show ' + (kind || '');
@@ -1796,7 +1796,16 @@ function setOnline() { document.body.classList.toggle('offline', !navigator.onLi
    START
    ===================================================================== */
 async function init() {
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
+  if ('serviceWorker' in navigator) {
+    const hadController = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.register('./sw.js').then(r => r.update()).catch(() => {});
+    // En ny appversion har installerats – ladda om en gång (inte mitt i ett formulär)
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!hadController || S.reloading) return;
+      const reload = () => { S.reloading = true; location.reload(); };
+      if ($('#modal').hidden) reload(); else S.reloadAfterModal = reload;
+    });
+  }
   try { if (navigator.storage && navigator.storage.persist) await navigator.storage.persist(); } catch (e) { /* valfritt */ }
   renderShell();
   setOnline();
