@@ -2,7 +2,7 @@
    Gör att appen kan öppnas utan internet. Appens filer sparas på enheten
    och uppdateras i bakgrunden när det finns internet. Din ekonomiska data
    hanteras INTE här, utan i appens lokala databas. */
-const CACHE = 'ekonomichefen-v4';
+const CACHE = 'ekonomichefen-v5';
 const SHELL = ['./', './index.html', './app.js', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
